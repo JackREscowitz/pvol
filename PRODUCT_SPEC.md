@@ -28,7 +28,7 @@ Do this for every rung in the Polymarket ladder and you get a **volatility smile
 ### The Formula
 
 ```
-σ = |ln(H / S)| / ( √T · Φ⁻¹(P / 2) )
+σ = |ln(H / S)| / ( √T · |Φ⁻¹(P / 2)| )
 ```
 
 Where:
@@ -64,6 +64,8 @@ The smile often has a characteristic shape: higher implied vol at the wings (far
 
 A single number summarizing the full smile — the crowd's aggregate implied volatility for Bitcoin over the current month. Displayed prominently alongside DVOL (Deribit's published IV index) as a reference benchmark.
 
+**Aggregation method:** probability-mass-weighted average. Each rung's implied vol is weighted by the probability mass in its price band (computed by differencing adjacent touch probabilities, the same step already performed in the skew model). This is the most financially motivated approach: rungs where the crowd has concentrated conviction count more than thin outer markets.
+
 ### View 3 — The Gap (Core Feature)
 
 The spread between PVOL and DVOL, shown as a chart over time. This is the headline feature. When the crowd on Polymarket is pricing significantly higher (or lower) volatility than professional options traders on Deribit, that divergence is visible, labeled, and explained.
@@ -84,11 +86,15 @@ PVOL does not claim to be more accurate than DVOL. DVOL is derived from a deeper
 
 ---
 
-## 5. Data Sources
+## 5. Data Sources & Tech Stack
 
-**Polymarket** — public API providing current YES share prices for monthly Bitcoin touch markets at each strike level. These are the inputs to the PVOL inversion.
+**Polymarket** — Gamma API (`gamma-api.polymarket.com`) for event and market metadata; CLOB API (`clob.polymarket.com/prices-history`) for YES token price history at arbitrary timestamps. Monthly BTC events follow a predictable slug pattern (`what-price-will-bitcoin-hit-in-{month}-{year}`), enabling both live and historical data fetches using the same pipeline established in `fetch_backtest_data.ipynb`.
 
-**Deribit** — public API providing the DVOL index (their published 30-day IV estimate) as a single number. Optionally, the full options chain IV per strike for a side-by-side smile comparison.
+**Deribit** — DVOL index endpoint as a single number (their published 30-day IV estimate). No options chain query required; the full per-strike smile comparison is out of scope.
+
+**BTC spot price** — CoinGecko history API (`api.coingecko.com/api/v3/coins/bitcoin/history`) for historical spot, matching the existing fetch pipeline.
+
+**Tech stack** — React frontend, FastAPI backend. FastAPI serves PVOL and DVOL data; React renders the three dashboard views.
 
 ---
 
@@ -96,9 +102,10 @@ PVOL does not claim to be more accurate than DVOL. DVOL is derived from a deeper
 
 **In scope for the demo:**
 - Live PVOL smile extraction from current Polymarket data
-- PVOL index (single aggregated number)
+- PVOL index (single aggregated number, probability-mass-weighted)
 - Live DVOL comparison panel showing the gap
-- Dashboard with all three views
+- Historical PVOL vs. DVOL time series chart (reconstructed from Polymarket CLOB price history and Deribit DVOL history)
+- React + FastAPI dashboard with all views
 
 **Out of scope:**
 - Rolling constant-maturity 30-day index (requires blending adjacent contract months, as VIX does)
@@ -121,27 +128,30 @@ PVOL does not claim to be more accurate than DVOL. DVOL is derived from a deeper
 
 ---
 
-## 8. Open Questions
+## 8. Design Decisions
 
-These are unresolved design decisions that affect implementation. They are listed here explicitly so they can be answered before the build is finalized.
+Resolved decisions that shaped the implementation scope.
 
-**How do we collapse the smile into one number?**
-The inversion gives a separate implied vol for every strike (e.g., 62% at $85k, 71% at $90k). To publish a single PVOL index we need to aggregate these. Candidates: simple average across all valid rungs; probability-mass-weighted average; at-the-money IV only (the rung closest to spot). Each choice produces a different number and each needs a justification. The right answer depends partly on what makes the PVOL/DVOL comparison most interpretable.
+**PVOL aggregation: probability-mass-weighted average.**
+Each rung's implied vol is weighted by its probability mass band. Rungs where the crowd has concentrated conviction dominate the index; thin outer markets contribute proportionally less. Simple average and ATM-only were rejected — the former treats all rungs equally regardless of liquidity, the latter discards most of the data.
 
-**What do we do when the data is self-contradictory?**
-Polymarket sometimes prices a farther-away strike higher than a closer one — logically impossible, since a higher strike must be harder to reach. When this happens the IV inversion is undefined (you get an imaginary number). We need a stated policy: silently drop the bad rungs, smooth over them with interpolation, or flag them as a data quality warning visible on the dashboard. The choice affects how many data points we have for the smile.
+**Non-monotone rungs: drop and flag.**
+When Polymarket prices a farther strike higher than a closer one (logically impossible — a more distant level must be harder to reach), the IV inversion yields an imaginary number. Those rungs are dropped from the smile and flagged with a visible data quality indicator on the dashboard. Silent dropping would mislead; interpolation adds complexity without mathematical grounding.
 
-**Are we being sloppy about drift?**
-The formula assumes BTC has no expected return over the period. BTC's actual risk-neutral drift (roughly tied to the risk-free rate and crypto funding costs) is small but nonzero. Is the bias this introduces small enough to not matter for the use case, or should we quantify it and surface it as an error bar?
+**Drift: zero-drift approximation, stated caveat.**
+BTC's monthly risk-neutral drift is roughly 0.4% (annualized rate / 12). Monthly vol is ~20-25% (80% annualized / √12). The drift term is noise relative to the vol signal at this time horizon and is not worth correcting. It is stated as a known approximation in the limitations section.
 
-**Does the number mean the same thing throughout the month?**
-A PVOL extracted on March 1 (30 days left) and one extracted on March 25 (5 days left) are not directly comparable. The denominator √T shrinks as expiry approaches, making readings increasingly noisy and unstable. Options markets handle this by blending two contract months to produce a constant 30-day estimate (the VIX methodology). Do we implement something similar, or accept that PVOL is only reliable early in the monthly cycle and label it accordingly?
+**Time normalization: label with days remaining, warn in final week.**
+PVOL readings become noisy as expiry approaches because √T shrinks in the denominator. Full VIX-style two-month blending is out of scope. Instead, every PVOL reading is labeled with days remaining to expiry, and the dashboard surfaces a warning when fewer than 7 days remain in the current contract month.
 
-**Can we find a historical moment where PVOL and DVOL diverged?**
-The strongest demo chart is a time series showing PVOL and DVOL side by side with a circled moment of divergence — ideally coinciding with a notable BTC event or macro shock. This makes the "retail vs. institutional sentiment" story concrete rather than theoretical. Do we have access to historical Polymarket data at sufficient resolution to reconstruct this?
+**Historical data: in scope via CLOB price history.**
+Polymarket's CLOB API (`prices-history` endpoint) supports arbitrary timestamp queries, enabling PVOL reconstruction for past months. The `fetch_backtest_data.ipynb` pipeline already demonstrates this for February 2026. The historical PVOL vs. DVOL divergence chart is in scope for the demo.
 
-**How do we get DVOL?**
-Deribit publishes their DVOL index as a direct API endpoint — a single number, no options math required. But if we want to show a Deribit volatility smile alongside our Polymarket smile (strike-by-strike IV comparison), we need to query their full options chain and invert Black-Scholes ourselves. Decision: do we use DVOL-as-a-number (simpler, for the gap chart) or DVOL-as-a-smile (richer, but requires more implementation)?
+**DVOL: direct index endpoint, single number.**
+Deribit publishes DVOL via a direct REST endpoint. No options chain query or Black-Scholes inversion is required. The per-strike Deribit smile comparison is out of scope.
 
-**What does the dashboard look like?**
-Three candidate layouts: (a) single page with smile chart, index number, and gap chart all visible at once — comprehensive but potentially cluttered; (b) tabbed view where the smile and the DVOL comparison are separate screens; (c) lead with the gap number as the headline metric and relegate the smile to a supporting panel. The right answer depends on what reads most clearly to a judge in a two-minute demo walkthrough.
+**Dashboard layout: gap as headline, single page.**
+The PVOL/DVOL spread is the most legible feature for a two-minute demo. Layout: gap number and time series chart at the top as the headline, PVOL smile below as supporting detail. Single page; no tabs.
+
+**Month boundary: frontmost active contract.**
+At any point in time, the pipeline queries the active monthly event with the nearest end date. When a month expires and the next opens, the pipeline automatically shifts to the new contract. No cross-month blending.
