@@ -39,12 +39,12 @@ Where:
 | H | Strike price (the level Polymarket asks about, e.g. $85,000) |
 | S | Current spot price of Bitcoin |
 | T | Time remaining in the month, in years |
-| P | Touch probability (the YES share price from Polymarket) |
+| P | Market-implied touch probability proxy (YES midquote; last traded YES price if bid/ask unavailable) |
 | Φ⁻¹ | Inverse of the standard normal CDF |
 
 **In plain English:** if the crowd prices YES shares at 55% for the $85k market, we ask — what volatility level would make a 55% touch probability mathematically correct? The answer is PVOL at that strike.
 
-A useful cross-check: touch probability is approximately twice the terminal probability (the probability of closing above the strike at month end), a consequence of the reflection principle for log-normal assets. The formula above is the full inversion of that relationship.
+A useful cross-check: touch probability is approximately twice the terminal probability (the probability of closing above the strike at month end), a consequence of the reflection principle for log-normal assets. The formula above is the closed-form inversion under a **zero-drift log-Brownian first-passage approximation**.
 
 ### Assumption
 
@@ -64,7 +64,14 @@ The smile often has a characteristic shape: higher implied vol at the wings (far
 
 A single number summarizing the full smile — the crowd's aggregate implied volatility for Bitcoin over the current month. Displayed prominently alongside DVOL (Deribit's published IV index) as a reference benchmark.
 
-**Aggregation method:** probability-mass-weighted average. Each rung's implied vol is weighted by the probability mass in its price band (computed by differencing adjacent touch probabilities, the same step already performed in the skew model). This is the most financially motivated approach: rungs where the crowd has concentrated conviction count more than thin outer markets.
+**Aggregation method:** touch-band-weighted average. Each rung's implied vol is weighted by its touch band width, computed by differencing adjacent touch probabilities:
+
+```
+w_i = P_i - P_{i+1}
+PVOL = Σ(w_i · σ_i) / Σ(w_i)
+```
+
+where strikes are ordered by increasing barrier distance. This is the most financially motivated approach: rungs where the crowd has concentrated conviction count more than thin outer markets.
 
 ### View 3 — The Gap (Core Feature)
 
@@ -102,7 +109,7 @@ PVOL does not claim to be more accurate than DVOL. DVOL is derived from a deeper
 
 **In scope for the demo:**
 - Live PVOL smile extraction from current Polymarket data
-- PVOL index (single aggregated number, probability-mass-weighted)
+- PVOL index (single aggregated number, touch-band-weighted)
 - Live DVOL comparison panel showing the gap
 - Historical PVOL vs. DVOL time series chart (reconstructed from Polymarket CLOB price history and Deribit DVOL history)
 - React + FastAPI dashboard with all views
@@ -121,10 +128,11 @@ PVOL does not claim to be more accurate than DVOL. DVOL is derived from a deeper
 | # | Limitation | Severity | Notes |
 |---|---|---|---|
 | 1 | **Zero-drift assumption** | Low-Medium | Risk-neutral drift is small for monthly horizons. Stated as a caveat; introduces modest bias at far-from-money strikes. |
-| 2 | **Non-monotone outer rungs** | Medium | Polymarket occasionally prices a farther strike higher than a closer one. The IV inversion is undefined at these points. Policy: drop offending rungs, surface a data quality flag. |
+| 2 | **Non-monotone outer rungs** | Medium | Polymarket occasionally prices a farther strike higher than a closer one. The IV inversion is undefined at these points. Policy: drop offending rungs, surface a data quality flag. Future versions will apply constrained monotonicity repair (e.g. isotonic regression) before volatility inversion. |
 | 3 | **Coarse strike grid** | Low-Medium | $5k spacing yields ~10 data points for the smile. Fitting is noisy at the wings. |
 | 4 | **Intramonth time decay** | Medium | PVOL is noisier near expiry (small T in denominator). Readings in the final week of the month should be treated cautiously. |
 | 5 | **No empirical validation of the gap signal** | Medium | The PVOL/DVOL spread is observable and interpretable but not yet backtested against realized vol or BTC returns. |
+| 6 | **Symmetric inversion** | Low-Medium | The current inversion uses a symmetric absolute log-distance approximation and may not fully capture upside/downside asymmetries in BTC jump risk or crowd sentiment. |
 
 ---
 
@@ -132,11 +140,11 @@ PVOL does not claim to be more accurate than DVOL. DVOL is derived from a deeper
 
 Resolved decisions that shaped the implementation scope.
 
-**PVOL aggregation: probability-mass-weighted average.**
-Each rung's implied vol is weighted by its probability mass band. Rungs where the crowd has concentrated conviction dominate the index; thin outer markets contribute proportionally less. Simple average and ATM-only were rejected — the former treats all rungs equally regardless of liquidity, the latter discards most of the data.
+**PVOL aggregation: touch-band-weighted average.**
+Each rung's implied vol is weighted by its touch band (w_i = P_i - P_{i+1}). Rungs where the crowd has concentrated conviction dominate the index; thin outer markets contribute proportionally less. Simple average and ATM-only were rejected — the former treats all rungs equally regardless of liquidity, the latter discards most of the data.
 
 **Non-monotone rungs: drop and flag.**
-When Polymarket prices a farther strike higher than a closer one (logically impossible — a more distant level must be harder to reach), the IV inversion yields an imaginary number. Those rungs are dropped from the smile and flagged with a visible data quality indicator on the dashboard. Silent dropping would mislead; interpolation adds complexity without mathematical grounding.
+When Polymarket prices a farther strike higher than a closer one (logically impossible — a more distant level must be harder to reach), the IV inversion yields an imaginary number. Those rungs are dropped from the smile and flagged with a visible data quality indicator on the dashboard. Silent dropping would mislead; interpolation adds complexity without mathematical grounding. Future versions will apply constrained monotonicity repair (e.g. isotonic regression) before volatility inversion.
 
 **Drift: zero-drift approximation, stated caveat.**
 BTC's monthly risk-neutral drift is roughly 0.4% (annualized rate / 12). Monthly vol is ~20-25% (80% annualized / √12). The drift term is noise relative to the vol signal at this time horizon and is not worth correcting. It is stated as a known approximation in the limitations section.
