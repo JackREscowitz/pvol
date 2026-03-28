@@ -42,8 +42,9 @@ function CompLegend({ payload }) {
   );
 }
 
-export default function ComparisonChart({ data, loading }) {
-  const history = useChartHistory(data);
+export default function ComparisonChart({ data, loading, history: historyProp }) {
+  const liveHistory = useChartHistory(historyProp ? null : data);
+  const history = historyProp ?? liveHistory;
 
   if (loading && history.length === 0) {
     return <div className="cchart-empty"><span className="gchart-pulse" />Loading…</div>;

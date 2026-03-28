@@ -100,3 +100,16 @@
 .mcard--negative .mcard__value  { color: #f87171; }
 .mcard--negative .mcard__accent { background: #ef4444; }
 .mcard--negative .mcard__label  { color: #ef4444; }
+
+/* Clickable (button reset + hover) */
+button.mcard {
+  width: 100%;
+  text-align: left;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+button.mcard:hover {
+  background: #141420;
+}

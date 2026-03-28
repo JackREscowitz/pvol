@@ -1,8 +1,14 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useDashboardData } from "../hooks/useDashboardData.js";
 import { useBtcPrice } from "../hooks/useBtcPrice.js";
 import MetricCard from "./MetricCard.jsx";
+import GapChart from "./charts/GapChart.jsx";
+import ComparisonChart from "./charts/Comparison.jsx";
+import SmileChart from "./charts/SmileChart.jsx";
+import { MOCK_DATA, MOCK_HISTORY } from "../mockData.js";
 import "./Dashboard.css";
+
+const USE_MOCK = true;
 
 const CHARTS = [
   { id: "gap-chart",        title: "GAP · PVOL − DVOL", subtitle: "Historical divergence",    primary: true },
@@ -11,11 +17,27 @@ const CHARTS = [
 ];
 
 export default function Dashboard() {
-  const { data, loading, error, lastUpdated, refresh } = useDashboardData();
+  const live = useDashboardData();
+  const { data, loading, error, lastUpdated, refresh } = USE_MOCK
+    ? { data: MOCK_DATA, loading: false, error: null, lastUpdated: new Date(), refresh: () => {} }
+    : live;
   const btcPrice = useBtcPrice();
 
-  const [showAll, setShowAll]       = useState(false);
-  const [activeIdx, setActiveIdx]   = useState(0);
+  const [showAll, setShowAll]     = useState(false);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const touchStartX               = useRef(null);
+
+  function handleTouchStart(e) { touchStartX.current = e.touches[0].clientX; }
+  function handleTouchEnd(e) {
+    if (touchStartX.current === null) return;
+    const delta = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(delta) < 40) return;
+    setActiveIdx(i => delta < 0
+      ? Math.min(i + 1, CHARTS.length - 1)
+      : Math.max(i - 1, 0)
+    );
+  }
 
   const pvol = data?.pvol ?? null;
   const dvol = data?.dvol ?? null;
@@ -129,30 +151,43 @@ export default function Dashboard() {
                     <span className="chart-panel__title">{c.title}</span>
                     <span className="chart-panel__subtitle">{c.subtitle}</span>
                   </div>
-                  <div className={`chart-panel__canvas${c.primary ? "" : " chart-panel__canvas--sm"}`} id={c.id} />
+                  <div className={`chart-panel__canvas${c.primary ? "" : " chart-panel__canvas--sm"}`}>
+                    {c.id === "gap-chart"        && <GapChart        data={data} loading={loading} history={USE_MOCK ? MOCK_HISTORY : undefined} />}
+                    {c.id === "comparison-chart" && <ComparisonChart data={data} loading={loading} history={USE_MOCK ? MOCK_HISTORY : undefined} />}
+                    {c.id === "smile-chart"      && <SmileChart      data={data} loading={loading} />}
+                  </div>
                 </div>
               ))}
             </>
           ) : (
             /* ── Single / carousel view ── */
-            <div className="carousel">
+            <div
+              className="carousel"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+            >
               <div className="chart-panel chart-panel--fill">
                 <div className="chart-panel__header">
                   <span className="chart-panel__title">{CHARTS[activeIdx].title}</span>
                   <span className="chart-panel__subtitle">{CHARTS[activeIdx].subtitle}</span>
                 </div>
-                <div className="chart-panel__canvas" id={CHARTS[activeIdx].id} />
+                <div className="chart-panel__canvas">
+                  {CHARTS[activeIdx].id === "gap-chart"        && <GapChart        data={data} loading={loading} history={USE_MOCK ? MOCK_HISTORY : undefined} />}
+                  {CHARTS[activeIdx].id === "comparison-chart" && <ComparisonChart data={data} loading={loading} history={USE_MOCK ? MOCK_HISTORY : undefined} />}
+                  {CHARTS[activeIdx].id === "smile-chart"      && <SmileChart      data={data} loading={loading} />}
+                </div>
               </div>
 
-              {/* Dot navigation */}
-              <div className="carousel__dots">
+              {/* Chart name indicators */}
+              <div className="carousel__indicators">
                 {CHARTS.map((c, i) => (
                   <button
                     key={c.id}
-                    className={`carousel__dot ${i === activeIdx ? "carousel__dot--active" : ""}`}
+                    className={`carousel__indicator ${i === activeIdx ? "carousel__indicator--active" : ""}`}
                     onClick={() => setActiveIdx(i)}
-                    title={c.title}
-                  />
+                  >
+                    {c.title}
+                  </button>
                 ))}
               </div>
             </div>
@@ -171,6 +206,7 @@ export default function Dashboard() {
             description={gapDescription}
             highlight={gapHighlight}
             loading={loading}
+            onClick={showAll ? undefined : () => { setShowAll(false); setActiveIdx(0); }}
           />
 
           <MetricCard
@@ -181,6 +217,7 @@ export default function Dashboard() {
             description="Prob-mass weighted avg across all strikes"
             highlight="neutral"
             loading={loading}
+            onClick={showAll ? undefined : () => { setShowAll(false); setActiveIdx(1); }}
           />
 
           <MetricCard
@@ -191,6 +228,7 @@ export default function Dashboard() {
             description="30-day implied vol from institutional options"
             highlight="neutral"
             loading={loading}
+            onClick={showAll ? undefined : () => { setShowAll(false); setActiveIdx(2); }}
           />
 
           {lastUpdated && (

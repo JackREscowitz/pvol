@@ -18,8 +18,9 @@ function GapTooltip({ active, payload, label }) {
   );
 }
 
-export default function GapChart({ data, loading }) {
-  const history = useChartHistory(data);
+export default function GapChart({ data, loading, history: historyProp }) {
+  const liveHistory = useChartHistory(historyProp ? null : data);
+  const history = historyProp ?? liveHistory;
 
   if (loading && history.length === 0) {
     return <div className="gchart-empty"><span className="gchart-pulse" />Loading data…</div>;
