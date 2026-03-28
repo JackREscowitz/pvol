@@ -1,0 +1,7 @@
+pandas
+numpy
+sympy
+jupyterlab
+jupytext
+basedpyright
+ruff
