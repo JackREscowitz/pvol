@@ -25,17 +25,21 @@ pvol/
 │       ├── components/
 │       │   ├── Landing.jsx     marketing/landing page
 │       │   ├── Dashboard.jsx   main analysis view
+│       │   ├── Methodology.jsx math explanation page
 │       │   ├── MetricCard.jsx  reusable metric display
+│       │   ├── PivoltLogo.jsx  logo component
 │       │   └── charts/
 │       │       ├── CandleChart.jsx   lightweight-charts candlestick wrapper
 │       │       ├── GapChart.jsx      PVOL − DVOL divergence
 │       │       ├── Comparison.jsx    PVOL candles + DVOL line
-│       │       └── SmileChart.jsx    vol smile scatter (Recharts)
+│       │       ├── TwoLineChart.jsx  dual line series chart
+│       │       └── PvolHistory.jsx   solo PVOL history chart
 │       └── utils/
 │           └── candles.js      toCandleSeries, toLineSeries, SMA, EMA
-└── backend/                Python compute pipeline (offline)
-    ├── pvol_engine.py      IV inversion math + Polymarket/Deribit/CoinGecko fetching
-    └── compute_history.py  batch processor that writes history.json
+├── backend/                Python compute pipeline (offline)
+│   ├── pvol_engine.py      IV inversion math + Polymarket/Deribit/CoinGecko fetching
+│   └── compute_history.py  batch processor that writes history.json
+└── docs/                   Product specs, API notes, model documentation
 ```
 
 ## Recomputing history
