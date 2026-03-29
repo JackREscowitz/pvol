@@ -1,6 +1,9 @@
 import PivoltLogo from "./PivoltLogo.jsx";
 import "./Methodology.css";
 
+import 'katex/dist/katex.min.css';
+import { InlineMath, BlockMath } from 'react-katex';
+
 export default function Methodology({ onBack }) {
   return (
     <div className="meth">
@@ -35,7 +38,7 @@ export default function Methodology({ onBack }) {
             collective probability that Bitcoin reaches that level at any point during the month.
           </p>
           <p>
-            These are mathematically identical to <strong style={{color:"#c8c8e0"}}>one-touch barrier options</strong> —
+            These are mathematically identical to <strong style={{ color: "#c8c8e0" }}>one-touch barrier options</strong> —
             a standard instrument in options markets. A touch probability is not just a directional bet;
             it encodes how volatile the underlying asset is expected to be. A highly volatile asset is
             more likely to graze a distant price level during a month, even if it ends the month far from
@@ -43,7 +46,7 @@ export default function Methodology({ onBack }) {
           </p>
           <p>
             Given a touch probability, a current price, a strike, and time remaining,
-            we can invert the barrier formula to recover the <strong style={{color:"#c8c8e0"}}>implied volatility</strong> —
+            we can invert the barrier formula to recover the <strong style={{ color: "#c8c8e0" }}>implied volatility</strong> —
             the volatility level that would produce exactly that probability under standard asset price dynamics.
             Do this for every rung in the Polymarket ladder and you get a full volatility smile: implied vol
             at each strike, comparable to an options chain on Deribit.
@@ -76,7 +79,10 @@ export default function Methodology({ onBack }) {
           </p>
 
           <div className="meth__formula">
-            <span className="meth__formula-line">P_touch(H) = 2 · Φ( −|ln(H/S)| / (σ · √T) )</span>
+            <span className="meth__formula-line">
+              <InlineMath math="
+              P_touch(H) = 2 · Φ( −|ln(H/S)| / (σ · √T) )"/>
+            </span>
           </div>
 
           <p>
@@ -84,9 +90,15 @@ export default function Methodology({ onBack }) {
           </p>
 
           <div className="meth__formula">
-            <span className="meth__formula-line">Φ⁻¹(P / 2) = −|ln(H/S)| / (σ · √T)</span>
-            <span className="meth__formula-line">σ = |ln(H/S)| / ( √T · |Φ⁻¹(P/2)| )</span>
-          </div>
+            <span className="meth__formula-line">
+
+              <InlineMath math="
+              Φ⁻¹(P / 2) = −|ln(H/S)| / (σ · √T)"/> </span>"
+            <span className="meth__formula-line">
+
+              <InlineMath math="
+                σ = |ln(H/S)| / ( √T · |Φ⁻¹(P/2)| )"/>
+            </span> </div>
 
           <p>This is the core PVOL formula. Variable definitions:</p>
 
@@ -98,23 +110,23 @@ export default function Methodology({ onBack }) {
               </tr>
             </thead>
             <tbody>
-              <tr><td>σ</td><td>Implied volatility (annualized) — what we solve for</td></tr>
-              <tr><td>H</td><td>Strike price (the barrier level Polymarket asks about)</td></tr>
-              <tr><td>S</td><td>Current Bitcoin spot price</td></tr>
-              <tr><td>T</td><td>Time remaining in the month, in years</td></tr>
-              <tr><td>P</td><td>Market-implied touch probability (YES midquote; last traded price as fallback)</td></tr>
-              <tr><td>Φ</td><td>Standard normal CDF</td></tr>
-              <tr><td>Φ⁻¹</td><td>Inverse standard normal CDF (norm.ppf in Python)</td></tr>
+              <tr><td><InlineMath math="σ" /></td><td>Implied volatility (annualized) — what we solve for</td></tr>
+              <tr><td><InlineMath math="H" /></td><td>Strike price (the barrier level Polymarket asks about)</td></tr>
+              <tr><td><InlineMath math="S" /></td><td>Current Bitcoin spot price</td></tr>
+              <tr><td><InlineMath math="T"></InlineMath></td><td>Time remaining in the month, in years</td></tr>
+              <tr><td><InlineMath math="P" /></td><td>Market-implied touch probability (YES midquote; last traded price as fallback)</td></tr>
+              <tr><td><InlineMath math="Φ"></InlineMath></td><td>Standard normal CDF</td></tr>
+              <tr><td><InlineMath math="Φ⁻¹"></InlineMath></td><td>Inverse standard normal CDF (norm.ppf in Python)</td></tr>
             </tbody>
           </table>
 
           <p>
-            <strong style={{color:"#c8c8e0"}}>Why log-distance, not dollar distance?</strong>{" "}
+            <strong style={{ color: "#c8c8e0" }}>Why log-distance, not dollar distance?</strong>{" "}
             Asset prices follow log-normal dynamics: equal percentage moves are equally likely,
             not equal dollar moves. |ln(H/S)| is the natural distance metric in this framework.
           </p>
           <p>
-            <strong style={{color:"#c8c8e0"}}>Why zero drift?</strong>{" "}
+            <strong style={{ color: "#c8c8e0" }}>Why zero drift?</strong>{" "}
             Assuming no expected return yields a closed-form inversion with no parameters to estimate.
             BTC's monthly risk-neutral drift (~0.4%) is small relative to monthly realized vol (~20-25%),
             so the approximation introduces only modest bias, especially near the money.
@@ -209,13 +221,13 @@ export default function Methodology({ onBack }) {
             two structurally different markets.
           </p>
           <p>
-            <strong style={{color:"#c8c8e0"}}>Deribit DVOL</strong> is derived from professional
+            <strong style={{ color: "#c8c8e0" }}>Deribit DVOL</strong> is derived from professional
             options traders, market makers, and hedge funds with deep liquidity and tight spreads.
             Its methodology closely follows the VIX: a variance-swap replication using the full
             options chain, blended across two expiries to hold constant maturity at 30 days.
           </p>
           <p>
-            <strong style={{color:"#c8c8e0"}}>Polymarket PVOL</strong> comes from a broader retail
+            <strong style={{ color: "#c8c8e0" }}>Polymarket PVOL</strong> comes from a broader retail
             and research community putting real money behind price predictions. Markets are
             less liquid, strikes are coarser ($5k spacing), and prices update less frequently —
             but the crowd is genuinely distinct from the Deribit order book.
