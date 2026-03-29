@@ -24,8 +24,26 @@
 
 .terminal__brand {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
+}
+
+.terminal__back {
+  background: none;
+  border: none;
+  color: #8888aa;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  outline: none;
+  transition: color 0.15s, background 0.15s;
+  line-height: 1;
+}
+
+.terminal__back:hover {
+  color: #fff;
+  background: #1a1a2e;
 }
 
 .terminal__brand-name {
