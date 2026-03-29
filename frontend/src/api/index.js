@@ -8,3 +8,8 @@ export async function fetchDashboard() {
   const { data } = await api.get("/dashboard");
   return data;
 }
+
+export async function fetchHistory() {
+  const { data } = await api.get("/history");
+  return data;
+}

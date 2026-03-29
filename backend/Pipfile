@@ -5,6 +5,12 @@ name = "pypi"
 
 [packages]
 fastapi = "*"
+uvicorn = "*"
+httpx = "*"
+requests = "*"
+numpy = "*"
+scipy = "*"
+python-dotenv = "*"
 basedpyright = "*"
 
 [dev-packages]

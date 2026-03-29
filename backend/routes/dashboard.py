@@ -1,8 +1,12 @@
 import asyncio
 import httpx
+import json
 import os
+import pathlib
 from fastapi import APIRouter, HTTPException
 from dotenv import load_dotenv
+
+_DATA_FILE = pathlib.Path(__file__).parent.parent / "data" / "history.json"
 
 load_dotenv()
 
@@ -63,6 +67,24 @@ async def get_dashboard():
     }
 
 
+@router.get("/history")
+def get_history():
+    """
+    Return precomputed PVOL vs DVOL time series (July 2025 – Feb 2026).
+    Run compute_history.py first to generate data/history.json.
+    """
+    if not _DATA_FILE.exists():
+        raise HTTPException(
+            status_code=503,
+            detail="History not yet computed. Run: python compute_history.py",
+        )
+    return json.loads(_DATA_FILE.read_text())
+
+
 @router.get("/health")
 async def health():
-    return {"status": "ok", "friend_api": FRIEND_API_URL}
+    return {
+        "status": "ok",
+        "friend_api": FRIEND_API_URL,
+        "history_ready": _DATA_FILE.exists(),
+    }
