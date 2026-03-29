@@ -1,4 +1,7 @@
-frontend/node_modules/
+# Node
+node_modules/
+dist/
+.env.local
 
 .mamba/
 
