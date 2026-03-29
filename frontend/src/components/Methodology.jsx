@@ -80,8 +80,7 @@ export default function Methodology({ onBack }) {
 
           <div className="meth__formula">
             <span className="meth__formula-line">
-              <InlineMath math="
-              P_touch(H) = 2 · Φ( −|ln(H/S)| / (σ · √T) )"/>
+              P_touch(H) = 2 · Φ( −|ln(H/S)| / (σ · √T) )
             </span>
           </div>
 
@@ -92,12 +91,11 @@ export default function Methodology({ onBack }) {
           <div className="meth__formula">
             <span className="meth__formula-line">
 
-              <InlineMath math="
-              Φ⁻¹(P / 2) = −|ln(H/S)| / (σ · √T)"/> </span>"
-            <span className="meth__formula-line">
+              Φ⁻¹(P / 2) = −|ln(H/S)| / (σ · √T)
+            </span>
 
-              <InlineMath math="
-                σ = |ln(H/S)| / ( √T · |Φ⁻¹(P/2)| )"/>
+            <span className="meth__formula-line">
+              σ = |ln(H/S)| / ( √T · |Φ⁻¹(P/2)| )
             </span> </div>
 
           <p>This is the core PVOL formula. Variable definitions:</p>
@@ -315,14 +313,14 @@ export default function Methodology({ onBack }) {
           </table>
         </section>
 
-      </div>
+      </div >
 
       {/* ── Footer ── */}
-      <footer className="meth__footer">
+      < footer className="meth__footer" >
         <PivoltLogo fontSize={12} color="#6a6a99" accentColor="#3a5a99" />
         <button className="meth__nav-back" onClick={onBack}>← Back to app</button>
-      </footer>
+      </footer >
 
-    </div>
+    </div >
   );
 }
