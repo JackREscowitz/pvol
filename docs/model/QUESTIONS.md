@@ -1,0 +1,5 @@
+- DVOL chart is updated every minute using live options market price data
+- The problem therefore, in making a parallel PVOL chart, we need to use Polymarket probability data (specifically the monthly touch markets) and keep track of them every minute in order to create our volatility score.
+- Solution proposed by teammate: create a PostgreSQL database with each row being a timestamp and price (probability), for each timestamp, feed into model and plot score on graph
+- Another problem is that as previous noted, at the end of the month, where the touch markets are all close to concluding, the score might deteriorate in some way. In what way will this deteriorate, and how does DVOL handle options close to closing?
+- Solution proposed by teammate: we have a chart that only shows score at beginning of month, and one that shows score throughout month.
