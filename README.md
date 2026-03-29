@@ -13,6 +13,12 @@ npm run dev
 
 No backend needed. Historical data (`frontend/src/data/history.json`) is bundled directly into the app.
 
+## Deploying with Docker
+
+```
+docker compose up -d --build --force-recreate
+```
+
 ## Project structure
 
 ```
