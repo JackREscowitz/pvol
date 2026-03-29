@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { snapshot, history } from "../data/index.js";
 import MetricCard from "./MetricCard.jsx";
+import PivoltLogo from "./PivoltLogo.jsx";
 import GapChart from "./charts/GapChart.jsx";
 import ComparisonChart from "./charts/Comparison.jsx";
 import PvolHistory from "./charts/PvolHistory.jsx";
@@ -33,7 +34,7 @@ export default function Dashboard({ onBack, onMethodology }) {
           {onBack && (
             <button className="dash__back" onClick={onBack}>←</button>
           )}
-          <span className="dash__brand-name">PVOL</span>
+          <PivoltLogo fontSize={15} />
           <span className="dash__brand-sub">Polymarket Implied Volatility</span>
         </div>
 

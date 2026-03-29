@@ -1,3 +1,4 @@
+import PivoltLogo from "./PivoltLogo.jsx";
 import "./Methodology.css";
 
 export default function Methodology({ onBack }) {
@@ -6,7 +7,7 @@ export default function Methodology({ onBack }) {
 
       {/* ── Nav ── */}
       <nav className="meth__nav">
-        <span className="meth__nav-brand">PVOL</span>
+        <PivoltLogo fontSize={15} />
         <button className="meth__nav-back" onClick={onBack}>← Back</button>
       </nav>
 
@@ -306,7 +307,7 @@ export default function Methodology({ onBack }) {
 
       {/* ── Footer ── */}
       <footer className="meth__footer">
-        <span>PVOL · YHack 2026</span>
+        <PivoltLogo fontSize={12} color="#6a6a99" accentColor="#3a5a99" />
         <button className="meth__nav-back" onClick={onBack}>← Back to app</button>
       </footer>
 

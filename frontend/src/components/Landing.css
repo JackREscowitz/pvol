@@ -128,12 +128,22 @@
 }
 
 .l-hero__title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.18em;
   font-size: clamp(72px, 12vw, 128px);
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1;
   color: #e8e8f0;
   margin: 0 0 24px;
+}
+
+.l-hero__bolt {
+  height: 0.75em;
+  width: auto;
+  flex-shrink: 0;
 }
 
 .l-hero__sub {

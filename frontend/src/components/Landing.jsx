@@ -3,6 +3,7 @@ import { snapshot, history } from "../data/index.js";
 import GapChart from "./charts/GapChart.jsx";
 import ComparisonChart from "./charts/Comparison.jsx";
 import PvolHistory from "./charts/PvolHistory.jsx";
+import PivoltLogo from "./PivoltLogo.jsx";
 import "./Landing.css";
 
 function FadeIn({ children, delay = 0 }) {
@@ -78,7 +79,7 @@ export default function Landing({ onEnter, onMethodology }) {
 
       {/* ── Nav ── */}
       <nav className={`l-nav${scrolled ? " l-nav--scrolled" : ""}`}>
-        <span className="l-nav__brand">PVOL</span>
+        <PivoltLogo fontSize={15} />
 
         <div className="l-nav__center">
           <span className="l-nav__stat">BTC <strong>${spot.toLocaleString()}</strong></span>
@@ -105,7 +106,12 @@ export default function Landing({ onEnter, onMethodology }) {
       <section className="l-hero">
         <div className="l-hero__badge">Jul 2025 – Feb 2026 · BTC Monthly Contracts</div>
 
-        <h1 className="l-hero__title">PVOL</h1>
+        <h1 className="l-hero__title">
+          <svg className="l-hero__bolt" viewBox="0 0 12 20" fill="none" aria-hidden="true">
+            <path d="M 8 0 L 0 12 L 5 12 L 4 20 L 12 8 L 7 8 Z" fill="#4488ff" />
+          </svg>
+          Pivolt
+        </h1>
         <p className="l-hero__sub">
           Implied volatility extracted from Polymarket prediction markets,<br />
           benchmarked against Deribit's institutional DVOL index.
@@ -163,7 +169,7 @@ export default function Landing({ onEnter, onMethodology }) {
       </section>
 
       <footer className="l-footer">
-        <span>PVOL · YHack 2026</span>
+        <PivoltLogo fontSize={12} color="#6a6a99" accentColor="#3a5a99" />
         <button className="l-footer__link" onClick={onMethodology}>Methodology</button>
         <button className="l-footer__top" onClick={() => topRef.current?.scrollIntoView({ behavior: "smooth" })}>↑</button>
       </footer>
