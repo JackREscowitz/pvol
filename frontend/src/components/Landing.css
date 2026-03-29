@@ -306,7 +306,7 @@
 
 /* ── Charts section ── */
 .landing__charts-section {
-  background: #f8fafc;
+  background: #080810;
   padding: 72px clamp(24px, 6vw, 80px) 80px;
   display: flex;
   flex-direction: column;
@@ -317,17 +317,17 @@
 .landing__chart-block {
   display: flex;
   flex-direction: column;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
+  border: 1px solid #1a1a2e;
+  border-radius: 12px;
   overflow: hidden;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  background: #0d0d18;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.5);
   scroll-margin-top: 72px;
 }
 
 .landing__chart-summary {
   padding: 24px 28px 20px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #12121e;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -339,22 +339,22 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: #3a3a5a;
   margin-bottom: 4px;
   text-align: left;
 }
 
 .landing__chart-headline {
-  font-size: 22px;
-  font-weight: 800;
-  color: #0f172a;
+  font-size: 18px;
+  font-weight: 700;
+  color: #888899;
   letter-spacing: -0.02em;
   text-align: left;
 }
 
 .landing__chart-description {
-  font-size: 13px;
-  color: #64748b;
+  font-size: 12px;
+  color: #3a3a5a;
   line-height: 1.6;
   max-width: 420px;
   margin-top: 6px;
@@ -374,24 +374,25 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: #3a3a5a;
 }
 
 .landing__chart-metric-value {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
+  color: #ccccdd;
 }
 
-.landing__chart-metric-value--pos { color: #2563eb; }
-.landing__chart-metric-value--neg { color: #ef4444; }
-.landing__chart-metric-value--neu { color: #0f172a; }
+.landing__chart-metric-value--pos { color: #26a69a; }
+.landing__chart-metric-value--neg { color: #ef5350; }
+.landing__chart-metric-value--neu { color: #ccccdd; }
 
 .landing__chart-canvas {
-  height: 360px;
-  background: #fff;
-  overflow: visible;
+  height: 380px;
+  background: #0d0d18;
+  overflow: hidden;
 }
 
 /* Override chart colours for white background */
@@ -446,4 +447,50 @@
 .landing__back-top:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
+}
+
+/* ── Dashboard CTA buttons ── */
+.landing__nav-cta {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(59,130,246,0.85);
+  border: none;
+  padding: 7px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  outline: none;
+  transition: background 0.15s, transform 0.15s;
+}
+.landing__nav-cta:hover {
+  background: rgba(59,130,246,1);
+  transform: translateY(-1px);
+}
+
+.landing__enter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 36px;
+  padding: 14px 32px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  outline: none;
+  box-shadow: 0 4px 24px rgba(99,102,241,0.45);
+  transition: transform 0.18s, box-shadow 0.18s;
+}
+.landing__enter-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(99,102,241,0.6);
 }

@@ -1,8 +1,8 @@
-import { useRef, useState, useEffect } from "react";
-import { MOCK_DATA, MOCK_HISTORY, MOCK_CANDLES } from "../mockData.js";
-import CandleChart from "./charts/CandleChart.jsx";
-import ComparisonChart from "./charts/Comparison.jsx";
+import { useState, useEffect, useRef } from "react";
+import { MOCK_DATA, MOCK_HISTORY } from "../mockData.js";
+import GapChart from "./charts/GapChart.jsx";
 import SmileChart from "./charts/SmileChart.jsx";
+import ComparisonChart from "./charts/Comparison.jsx";
 import "./Landing.css";
 
 function AnimatedBlock({ children, delay = 0 }) {
@@ -35,13 +35,13 @@ function AnimatedBlock({ children, delay = 0 }) {
 }
 
 export default function Landing({ onEnter }) {
+  const topRef   = useRef(null);
   const gapRef   = useRef(null);
   const smileRef = useRef(null);
   const compRef  = useRef(null);
-  const topRef   = useRef(null);
+  const [scrolled, setScrolled] = useState(false);
 
   const { gap, pvol, dvol, spot } = MOCK_DATA;
-  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
@@ -49,8 +49,7 @@ export default function Landing({ onEnter }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const scrollTo  = (ref) => ref.current?.scrollIntoView({ behavior: "smooth" });
-  const scrollTop = ()    => topRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollTo = (ref) => ref.current?.scrollIntoView({ behavior: "smooth" });
 
   return (
     <div className="landing" ref={topRef}>
@@ -58,14 +57,11 @@ export default function Landing({ onEnter }) {
       {/* ── Nav ── */}
       <nav className={`landing__nav${scrolled ? " landing__nav--scrolled" : ""}`}>
         <span className="landing__nav-brand">PVOL</span>
-
         <div className="landing__nav-right">
           <button className="landing__nav-link" onClick={() => scrollTo(gapRef)}>GAP</button>
           <button className="landing__nav-link" onClick={() => scrollTo(smileRef)}>PVOL Smile</button>
           <button className="landing__nav-link" onClick={() => scrollTo(compRef)}>PVOL vs DVOL</button>
-
           <div className="landing__nav-divider" />
-
           <div className="landing__nav-btc">
             <span className="landing__nav-btc-label">BTC</span>
             <span className="landing__nav-btc-price">${spot.toLocaleString()}</span>
@@ -73,6 +69,9 @@ export default function Landing({ onEnter }) {
               {gap >= 0 ? "+" : ""}{gap.toFixed(2)}%
             </span>
           </div>
+          <button className="landing__nav-cta" onClick={onEnter}>
+            Open Dashboard →
+          </button>
         </div>
       </nav>
 
@@ -118,18 +117,17 @@ export default function Landing({ onEnter }) {
           </div>
         </div>
 
-        <div className="landing__scroll-cue" onClick={() => scrollTo(gapRef)}>
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M8 11L2 5h12z"/>
+        <button className="landing__enter-btn" onClick={onEnter}>
+          Open Dashboard
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          Scroll
-        </div>
+        </button>
       </section>
 
       {/* ── Charts section ── */}
       <section className="landing__charts-section">
 
-        {/* GAP – candlestick */}
         <AnimatedBlock delay={0}>
           <div className="landing__chart-block" ref={gapRef}>
             <div className="landing__chart-summary">
@@ -137,9 +135,8 @@ export default function Landing({ onEnter }) {
                 <div className="landing__chart-section-title">GAP · PVOL − DVOL</div>
                 <div className="landing__chart-headline">Historical Divergence</div>
                 <p className="landing__chart-description">
-                  Each candle shows the GAP's open, high, low, and close over a 10-minute
-                  window. Green candles mean the gap widened; red candles mean it narrowed.
-                  Drag the brush at the bottom to zoom into any period.
+                  Each candle shows the GAP's open, high, low, and close. Green candles
+                  mean the gap widened; red candles mean it narrowed.
                 </p>
               </div>
               <div className="landing__chart-metric">
@@ -150,12 +147,11 @@ export default function Landing({ onEnter }) {
               </div>
             </div>
             <div className="landing__chart-canvas">
-              <CandleChart data={MOCK_CANDLES} loading={false} />
+              <GapChart data={MOCK_DATA} loading={false} history={MOCK_HISTORY} />
             </div>
           </div>
         </AnimatedBlock>
 
-        {/* Smile */}
         <AnimatedBlock delay={120}>
           <div className="landing__chart-block" ref={smileRef}>
             <div className="landing__chart-summary">
@@ -164,8 +160,7 @@ export default function Landing({ onEnter }) {
                 <div className="landing__chart-headline">Implied Vol by Strike</div>
                 <p className="landing__chart-description">
                   The volatility smile shows how the crowd prices uncertainty at each
-                  BTC strike price. Higher vol at the wings reveals tail-risk sentiment
-                  in the prediction market.
+                  BTC strike price. Higher vol at the wings reveals tail-risk sentiment.
                 </p>
               </div>
               <div className="landing__chart-metric">
@@ -181,7 +176,6 @@ export default function Landing({ onEnter }) {
           </div>
         </AnimatedBlock>
 
-        {/* Comparison */}
         <AnimatedBlock delay={240}>
           <div className="landing__chart-block" ref={compRef}>
             <div className="landing__chart-summary">
@@ -189,9 +183,8 @@ export default function Landing({ onEnter }) {
                 <div className="landing__chart-section-title">PVOL vs DVOL</div>
                 <div className="landing__chart-headline">Index Comparison Over Time</div>
                 <p className="landing__chart-description">
-                  Side-by-side view of Polymarket and Deribit volatility indices.
-                  Spot when the crowd leads or lags institutional pricing and identify
-                  regime shifts in real time. Use the brush to zoom.
+                  PVOL candlesticks with DVOL as an overlay line. Spot when the crowd
+                  leads or lags institutional pricing in real time.
                 </p>
               </div>
               <div className="landing__chart-metric">
@@ -202,7 +195,7 @@ export default function Landing({ onEnter }) {
               </div>
             </div>
             <div className="landing__chart-canvas">
-              <ComparisonChart data={MOCK_DATA} loading={false} history={MOCK_HISTORY} showBrush />
+              <ComparisonChart data={MOCK_DATA} loading={false} history={MOCK_HISTORY} />
             </div>
           </div>
         </AnimatedBlock>
@@ -211,7 +204,7 @@ export default function Landing({ onEnter }) {
 
       <footer className="landing__footer">
         <span>PVOL · YHack 2026</span>
-        <button className="landing__back-top" onClick={scrollTop} title="Back to top">↑</button>
+        <button className="landing__back-top" onClick={() => topRef.current?.scrollIntoView({ behavior: "smooth" })} title="Back to top">↑</button>
       </footer>
 
     </div>

@@ -19,42 +19,37 @@ export const MOCK_DATA = {
   ],
 };
 
-// ── Candlestick data for GAP chart (50 candles × 10 min) ──
-export const MOCK_CANDLES = (() => {
-  const candles = [];
-  const start = Date.now() - 50 * 10 * 60_000;
-  let price = 5.2;
-  for (let i = 0; i < 50; i++) {
-    const t      = new Date(start + i * 10 * 60_000);
-    const open   = price;
-    const noise  = (Math.random() - .48) * 2.2 + Math.sin(i / 7) * .4;
-    const close  = Math.max(.4, Math.min(13.5, open + noise));
-    const wUp    = Math.random() * 1.2 + .2;
-    const wDown  = Math.random() * 1.2 + .2;
-    const high   = +( Math.max(open, close) + wUp   ).toFixed(2);
-    const low    = +( Math.max(.1, Math.min(open, close) - wDown) ).toFixed(2);
-    candles.push({
-      time:  t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      open:  +open.toFixed(2),
-      close: +close.toFixed(2),
-      high,
-      low,
-    });
-    price = close;
-  }
-  return candles;
-})();
-
-const now = Date.now();
-export const MOCK_HISTORY = Array.from({ length: 24 }, (_, i) => {
-  const t    = new Date(now - (23 - i) * 5 * 60_000);
-  const pvol = 60 + Math.sin(i * 0.4) * 6 + i * 0.22;
-  const dvol = 56 + Math.cos(i * 0.3) * 4 + i * 0.10;
-  return {
-    time:      t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    timestamp: t.getTime(),
-    pvol:      +pvol.toFixed(2),
-    dvol:      +dvol.toFixed(2),
-    gap:       +(pvol - dvol).toFixed(2),
+function seededRand(seed) {
+  let s = seed;
+  return () => {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    return (s >>> 0) / 0xffffffff;
   };
-});
+}
+
+// 120 data points at 1-minute intervals — mean-reverting random walk
+// produces realistic candle bodies and wicks when bucketed into OHLC.
+export const MOCK_HISTORY = (() => {
+  const rand = seededRand(42);
+  const now  = Date.now();
+  const pts  = [];
+  let pvol = 65.0;
+  let dvol = 57.8;
+
+  for (let i = 0; i < 120; i++) {
+    pvol += (rand() - 0.48) * 0.55 + (65.0 - pvol) * 0.09;
+    dvol += (rand() - 0.50) * 0.42 + (57.8 - dvol) * 0.09;
+    pvol  = Math.max(60, Math.min(72, pvol));
+    dvol  = Math.max(54, Math.min(64, dvol));
+
+    const t = new Date(now - (119 - i) * 60_000);
+    pts.push({
+      time:      t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      timestamp: t.getTime(),
+      pvol:      +pvol.toFixed(2),
+      dvol:      +dvol.toFixed(2),
+      gap:       +(pvol - dvol).toFixed(2),
+    });
+  }
+  return pts;
+})();
