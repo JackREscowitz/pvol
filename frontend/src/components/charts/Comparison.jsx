@@ -1,34 +1,28 @@
 import { useMemo } from "react";
-import { useChartHistory } from "../../hooks/useChartHistory.js";
-import { toCandleSeries, toLineSeries } from "../../hooks/useCandleHistory.js";
-import CandleChart from "./CandleChart.jsx";
+import { toSegmentedLine } from "../../utils/candles.js";
+import TwoLineChart from "./TwoLineChart.jsx";
 import "./ComparisonChart.css";
 
-const pvolFormatter = v => `${v.toFixed(2)}%`;
+const formatter = v => `${v.toFixed(2)}%`;
 
-export default function ComparisonChart({ data, loading, history: historyProp }) {
-  const liveHistory = useChartHistory(historyProp ? null : data);
-  const history     = historyProp ?? liveHistory;
+export default function ComparisonChart({ history }) {
+  const pvolSegs = useMemo(() => toSegmentedLine(history, "pvol"), [history]);
+  const dvolSegs = useMemo(() => toSegmentedLine(history, "dvol"), [history]);
 
-  const candleData = useMemo(() => toCandleSeries(history, "pvol"), [history]);
-  const lineData   = useMemo(() => toLineSeries(history, "dvol"),   [history]);
-
-  if (loading && history.length === 0) {
-    return <div className="cchart-empty"><span className="gchart-pulse" />Loading…</div>;
-  }
-  if (history.length === 0) {
-    return <div className="cchart-empty">Waiting for first data point…</div>;
+  if (!history?.length) {
+    return <div className="cchart-empty">No history data</div>;
   }
 
   return (
     <div className="cchart-wrap">
-      <CandleChart
-        candleData={candleData}
-        lineData={lineData}
-        lineColor="#eab308"
-        priceFormatter={pvolFormatter}
-        scaleMargins={{ top: 0.06, bottom: 0.06 }}
-        independentLine={true}
+      <TwoLineChart
+        line1Segs={pvolSegs}
+        line2Segs={dvolSegs}
+        line1Color="#4488ff"
+        line2Color="#eab308"
+        line1Label="PVOL"
+        line2Label="DVOL"
+        priceFormatter={formatter}
       />
     </div>
   );

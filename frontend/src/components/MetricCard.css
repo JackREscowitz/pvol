@@ -1,115 +1,91 @@
 .mcard {
   position: relative;
-  background: #0f0f18;
-  padding: 20px 20px 16px;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex-direction: row;
+  align-items: stretch;
+  background: #0d0d14;
+  border: 1px solid #1a1a28;
+  border-radius: 6px;
   overflow: hidden;
-  border-bottom: 1px solid #1a1a28;
+  text-align: left;
+  width: 100%;
 }
 
-.mcard__header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+.mcard--btn {
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.mcard--btn:hover {
+  background: #12121e;
+  border-color: #2a2a40;
 }
 
-.mcard__label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #fff;
+.mcard__accent {
+  width: 3px;
+  flex-shrink: 0;
+  background: #2a2a40;
 }
+.mcard--positive .mcard__accent { background: #22c55e; }
+.mcard--negative .mcard__accent { background: #ef4444; }
+.mcard--neutral  .mcard__accent { background: #4488ff; }
 
-.mcard__sublabel {
-  font-size: 10px;
-  color: #8888aa;
-  letter-spacing: 0.04em;
+.mcard__body {
+  padding: 14px 16px 12px;
+  flex: 1;
+  min-width: 0;
 }
 
 .mcard__value-row {
   display: flex;
   align-items: baseline;
   gap: 4px;
-  min-height: 52px;
+  margin-bottom: 6px;
 }
 
 .mcard__value {
-  font-size: 44px;
+  font-family: var(--mono, "JetBrains Mono", monospace);
+  font-size: 28px;
   font-weight: 700;
   line-height: 1;
-  letter-spacing: -0.02em;
-  color: #fff;
+  color: #e8e8f0;
+  letter-spacing: -0.5px;
   font-variant-numeric: tabular-nums;
 }
-
-.mcard__value--na {
-  font-size: 36px;
-  color: #444466;
-}
+.mcard--positive .mcard__value { color: #22c55e; }
+.mcard--negative .mcard__value { color: #ef4444; }
 
 .mcard__unit {
-  font-size: 16px;
-  font-weight: 400;
-  color: #fff;
-  align-self: flex-end;
-  padding-bottom: 6px;
+  font-family: var(--mono, monospace);
+  font-size: 13px;
+  color: #7070aa;
+  letter-spacing: 0.04em;
 }
 
-.mcard__description {
+.mcard__labels {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.mcard__label {
+  font-family: var(--mono, monospace);
   font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: #8888aa;
+}
+
+.mcard__sublabel {
+  font-size: 10px;
+  color: #6a6a99;
+  letter-spacing: 0.04em;
+}
+
+.mcard__desc {
+  font-size: 11px;
+  color: #7070aa;
   margin: 0;
   line-height: 1.5;
-}
-
-.mcard__skeleton {
-  width: 120px;
-  height: 44px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #1a1a28 25%, #22223a 50%, #1a1a28 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
-}
-
-@keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* Accent bar on left edge */
-.mcard__accent {
-  position: absolute;
-  left: 0;
-  top: 20%;
-  bottom: 20%;
-  width: 2px;
-  border-radius: 2px;
-  background: #2a2a4a;
-  transition: background 0.2s;
-}
-
-/* Positive (PVOL > DVOL) */
-.mcard--positive .mcard__value  { color: #4ade80; }
-.mcard--positive .mcard__accent { background: #22c55e; }
-.mcard--positive .mcard__label  { color: #22c55e; }
-
-/* Negative (PVOL < DVOL) */
-.mcard--negative .mcard__value  { color: #f87171; }
-.mcard--negative .mcard__accent { background: #ef4444; }
-.mcard--negative .mcard__label  { color: #ef4444; }
-
-/* Clickable (button reset + hover) */
-button.mcard {
-  width: 100%;
-  text-align: left;
-  border: none;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-button.mcard:hover {
-  background: #141420;
 }

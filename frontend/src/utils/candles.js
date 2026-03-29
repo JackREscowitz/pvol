@@ -57,6 +57,46 @@ export function toLineSeries(history, field) {
 }
 
 /**
+ * Like toLineSeries but splits the output at cross-month gaps (> 4 days apart).
+ * Returns { solid: Array<Array>, dotted: Array<Array> } where each solid array
+ * is one contract-month segment and each dotted array is a two-point connector
+ * bridging the gap to the next month.
+ *
+ * @param {Array}  history - Same history array
+ * @param {string} field   - Field to plot
+ * @returns {{ solid: Array<Array>, dotted: Array<Array> }}
+ */
+export function toSegmentedLine(history, field) {
+  if (!history?.length) return { solid: [], dotted: [] };
+
+  const GAP_SECONDS = 4 * 86_400; // 4+ days between points = month boundary
+  const seen = new Set();
+  const points = history
+    .filter(p => p[field] != null)
+    .map(p => ({ time: Math.floor(p.timestamp / 1000), value: p[field] }))
+    .filter(p => { if (seen.has(p.time)) return false; seen.add(p.time); return true; });
+
+  if (!points.length) return { solid: [], dotted: [] };
+
+  const solid  = [];
+  const dotted = [];
+  let current  = [points[0]];
+
+  for (let i = 1; i < points.length; i++) {
+    if (points[i].time - points[i - 1].time > GAP_SECONDS) {
+      solid.push(current);
+      dotted.push([current[current.length - 1], points[i]]);
+      current = [points[i]];
+    } else {
+      current.push(points[i]);
+    }
+  }
+  solid.push(current);
+
+  return { solid, dotted };
+}
+
+/**
  * Simple Moving Average of candle body centers ((open+close)/2).
  * Because the average is computed from body midpoints, the resulting line
  * is always within the body region of recent candles — it threads through

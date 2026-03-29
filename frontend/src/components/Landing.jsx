@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { MOCK_DATA, MOCK_HISTORY } from "../mockData.js";
+import { snapshot, history } from "../data/index.js";
 import GapChart from "./charts/GapChart.jsx";
-import SmileChart from "./charts/SmileChart.jsx";
 import ComparisonChart from "./charts/Comparison.jsx";
+import PvolHistory from "./charts/PvolHistory.jsx";
 import "./Landing.css";
 
-function AnimatedBlock({ children, delay = 0 }) {
+function FadeIn({ children, delay = 0 }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
 
@@ -24,9 +24,9 @@ function AnimatedBlock({ children, delay = 0 }) {
     <div
       ref={ref}
       style={{
-        opacity:    visible ? 1 : 0,
-        transform:  visible ? "translateY(0)" : "translateY(60px)",
-        transition: `opacity 0.7s ease ${delay}ms, transform 0.8s cubic-bezier(0.22,1,0.36,1) ${delay}ms`,
+        opacity:   visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(48px)",
+        transition: `opacity 0.6s ease ${delay}ms, transform 0.7s cubic-bezier(0.22,1,0.36,1) ${delay}ms`,
       }}
     >
       {children}
@@ -34,177 +34,138 @@ function AnimatedBlock({ children, delay = 0 }) {
   );
 }
 
-export default function Landing({ onEnter }) {
-  const topRef   = useRef(null);
-  const gapRef   = useRef(null);
-  const smileRef = useRef(null);
-  const compRef  = useRef(null);
+const SECTIONS = [
+  {
+    id: "gap",
+    tag: "GAP · PVOL − DVOL",
+    headline: "Historical Divergence",
+    body: "The spread between what Polymarket crowds and Deribit institutions priced into BTC volatility. Each candle captures whether the gap grew or shrank over a ~3-day window.",
+    chart: <GapChart history={history} />,
+  },
+  {
+    id: "pvd",
+    tag: "PVOL vs DVOL",
+    headline: "Index Comparison",
+    body: "Both indices as continuous lines on a shared scale. Where the lines converge, crowd and institutions agreed. Where they diverge, one was pricing in significantly more uncertainty than the other.",
+    chart: <ComparisonChart history={history} />,
+  },
+  {
+    id: "pvol",
+    tag: "PVOL History",
+    headline: "Polymarket Implied Vol",
+    body: "PVOL across all 8 monthly BTC contracts. The indigo line is a 9-period EMA — it tracks the underlying trend while smoothing out day-to-day noise in the crowd's vol pricing.",
+    chart: <PvolHistory history={history} />,
+  },
+];
+
+export default function Landing({ onEnter, onMethodology }) {
+  const topRef    = useRef(null);
+  const sectionRefs = useRef({});
   const [scrolled, setScrolled] = useState(false);
 
-  const { gap, pvol, dvol, spot } = MOCK_DATA;
+  const { gap, pvol, dvol, spot } = snapshot;
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
+    const onScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const scrollTo = (ref) => ref.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollTo = id => sectionRefs.current[id]?.scrollIntoView({ behavior: "smooth" });
 
   return (
     <div className="landing" ref={topRef}>
 
       {/* ── Nav ── */}
-      <nav className={`landing__nav${scrolled ? " landing__nav--scrolled" : ""}`}>
-        <span className="landing__nav-brand">PVOL</span>
-        <div className="landing__nav-right">
-          <button className="landing__nav-link" onClick={() => scrollTo(gapRef)}>GAP</button>
-          <button className="landing__nav-link" onClick={() => scrollTo(smileRef)}>PVOL Smile</button>
-          <button className="landing__nav-link" onClick={() => scrollTo(compRef)}>PVOL vs DVOL</button>
-          <div className="landing__nav-divider" />
-          <div className="landing__nav-btc">
-            <span className="landing__nav-btc-label">BTC</span>
-            <span className="landing__nav-btc-price">${spot.toLocaleString()}</span>
-            <span className={`landing__nav-gap ${gap >= 0 ? "landing__nav-gap--pos" : "landing__nav-gap--neg"}`}>
-              {gap >= 0 ? "+" : ""}{gap.toFixed(2)}%
-            </span>
-          </div>
-          <button className="landing__nav-cta" onClick={onEnter}>
-            Open Dashboard →
-          </button>
+      <nav className={`l-nav${scrolled ? " l-nav--scrolled" : ""}`}>
+        <span className="l-nav__brand">PVOL</span>
+
+        <div className="l-nav__center">
+          <span className="l-nav__stat">BTC <strong>${spot.toLocaleString()}</strong></span>
+          <span className="l-nav__divider" />
+          <span className="l-nav__stat">PVOL <strong>{pvol.toFixed(2)}%</strong></span>
+          <span className="l-nav__divider" />
+          <span className="l-nav__stat">DVOL <strong>{dvol.toFixed(2)}%</strong></span>
+          <span className="l-nav__divider" />
+          <span className={`l-nav__gap${gap >= 0 ? " l-nav__gap--pos" : " l-nav__gap--neg"}`}>
+            GAP {gap >= 0 ? "+" : ""}{gap.toFixed(2)}%
+          </span>
+        </div>
+
+        <div className="l-nav__right">
+          <button className="l-nav__link" onClick={() => scrollTo("gap")}>GAP</button>
+          <button className="l-nav__link" onClick={() => scrollTo("pvd")}>PVOL vs DVOL</button>
+          <button className="l-nav__link" onClick={() => scrollTo("pvol")}>PVOL</button>
+          <button className="l-nav__link" onClick={onMethodology}>Methodology</button>
+          <button className="l-nav__cta" onClick={onEnter}>Dashboard →</button>
         </div>
       </nav>
 
       {/* ── Hero ── */}
-      <section className="landing__hero">
-        <div className="landing__cloud landing__cloud--1" />
-        <div className="landing__cloud landing__cloud--2" />
-        <div className="landing__cloud landing__cloud--3" />
+      <section className="l-hero">
+        <div className="l-hero__badge">Jul 2025 – Feb 2026 · BTC Monthly Contracts</div>
 
-        <div className="landing__badge">
-          <span className="landing__badge-dot" />
-          Live · BTC Options
-        </div>
-
-        <h1 className="landing__title">PVOL</h1>
-
-        <p className="landing__subtitle">
-          Real-time implied volatility from Polymarket,
+        <h1 className="l-hero__title">PVOL</h1>
+        <p className="l-hero__sub">
+          Implied volatility extracted from Polymarket prediction markets,<br />
           benchmarked against Deribit's institutional DVOL index.
         </p>
 
-        <div className="landing__stats">
-          <div className="landing__stat">
-            <span className="landing__stat-label">BTC</span>
-            <span className="landing__stat-value">${spot.toLocaleString()}</span>
+        <div className="l-hero__stats">
+          <div className="l-hero__stat">
+            <span className="l-hero__stat-label">BTC</span>
+            <span className="l-hero__stat-value">${spot.toLocaleString()}</span>
           </div>
-          <div className="landing__stat-divider" />
-          <div className="landing__stat">
-            <span className="landing__stat-label">PVOL</span>
-            <span className="landing__stat-value">{pvol.toFixed(2)}%</span>
+          <div className="l-hero__divider" />
+          <div className="l-hero__stat">
+            <span className="l-hero__stat-label">PVOL</span>
+            <span className="l-hero__stat-value">{pvol.toFixed(2)}%</span>
           </div>
-          <div className="landing__stat-divider" />
-          <div className="landing__stat">
-            <span className="landing__stat-label">DVOL</span>
-            <span className="landing__stat-value">{dvol.toFixed(2)}%</span>
+          <div className="l-hero__divider" />
+          <div className="l-hero__stat">
+            <span className="l-hero__stat-label">DVOL</span>
+            <span className="l-hero__stat-value">{dvol.toFixed(2)}%</span>
           </div>
-          <div className="landing__stat-divider" />
-          <div className="landing__stat">
-            <span className="landing__stat-label">GAP</span>
-            <span className={`landing__stat-value ${gap >= 0 ? "landing__stat-value--pos" : "landing__stat-value--neg"}`}>
+          <div className="l-hero__divider" />
+          <div className="l-hero__stat">
+            <span className="l-hero__stat-label">GAP</span>
+            <span className={`l-hero__stat-value${gap >= 0 ? " l-hero__stat-value--pos" : " l-hero__stat-value--neg"}`}>
               {gap >= 0 ? "+" : ""}{gap.toFixed(2)}%
             </span>
           </div>
         </div>
 
-        <button className="landing__enter-btn" onClick={onEnter}>
+        <button className="l-hero__btn" onClick={onEnter}>
           Open Dashboard
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
             <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
       </section>
 
-      {/* ── Charts section ── */}
-      <section className="landing__charts-section">
-
-        <AnimatedBlock delay={0}>
-          <div className="landing__chart-block" ref={gapRef}>
-            <div className="landing__chart-summary">
-              <div>
-                <div className="landing__chart-section-title">GAP · PVOL − DVOL</div>
-                <div className="landing__chart-headline">Historical Divergence</div>
-                <p className="landing__chart-description">
-                  Each candle shows the GAP's open, high, low, and close. Green candles
-                  mean the gap widened; red candles mean it narrowed.
-                </p>
+      {/* ── Chart sections ── */}
+      <section className="l-charts">
+        {SECTIONS.map((s, i) => (
+          <FadeIn key={s.id} delay={i * 80}>
+            <div
+              className="l-block"
+              ref={el => { sectionRefs.current[s.id] = el; }}
+            >
+              <div className="l-block__info">
+                <span className="l-block__tag">{s.tag}</span>
+                <h2 className="l-block__headline">{s.headline}</h2>
+                <p className="l-block__body">{s.body}</p>
               </div>
-              <div className="landing__chart-metric">
-                <span className="landing__chart-metric-label">Current GAP</span>
-                <span className={`landing__chart-metric-value ${gap >= 0 ? "landing__chart-metric-value--pos" : "landing__chart-metric-value--neg"}`}>
-                  {gap >= 0 ? "+" : ""}{gap.toFixed(2)}%
-                </span>
-              </div>
+              <div className="l-block__chart">{s.chart}</div>
             </div>
-            <div className="landing__chart-canvas">
-              <GapChart data={MOCK_DATA} loading={false} history={MOCK_HISTORY} />
-            </div>
-          </div>
-        </AnimatedBlock>
-
-        <AnimatedBlock delay={120}>
-          <div className="landing__chart-block" ref={smileRef}>
-            <div className="landing__chart-summary">
-              <div>
-                <div className="landing__chart-section-title">PVOL Smile</div>
-                <div className="landing__chart-headline">Implied Vol by Strike</div>
-                <p className="landing__chart-description">
-                  The volatility smile shows how the crowd prices uncertainty at each
-                  BTC strike price. Higher vol at the wings reveals tail-risk sentiment.
-                </p>
-              </div>
-              <div className="landing__chart-metric">
-                <span className="landing__chart-metric-label">PVOL Index</span>
-                <span className="landing__chart-metric-value landing__chart-metric-value--neu">
-                  {pvol.toFixed(2)}%
-                </span>
-              </div>
-            </div>
-            <div className="landing__chart-canvas">
-              <SmileChart data={MOCK_DATA} loading={false} />
-            </div>
-          </div>
-        </AnimatedBlock>
-
-        <AnimatedBlock delay={240}>
-          <div className="landing__chart-block" ref={compRef}>
-            <div className="landing__chart-summary">
-              <div>
-                <div className="landing__chart-section-title">PVOL vs DVOL</div>
-                <div className="landing__chart-headline">Index Comparison Over Time</div>
-                <p className="landing__chart-description">
-                  PVOL candlesticks with DVOL as an overlay line. Spot when the crowd
-                  leads or lags institutional pricing in real time.
-                </p>
-              </div>
-              <div className="landing__chart-metric">
-                <span className="landing__chart-metric-label">DVOL Index</span>
-                <span className="landing__chart-metric-value landing__chart-metric-value--neu">
-                  {dvol.toFixed(2)}%
-                </span>
-              </div>
-            </div>
-            <div className="landing__chart-canvas">
-              <ComparisonChart data={MOCK_DATA} loading={false} history={MOCK_HISTORY} />
-            </div>
-          </div>
-        </AnimatedBlock>
-
+          </FadeIn>
+        ))}
       </section>
 
-      <footer className="landing__footer">
+      <footer className="l-footer">
         <span>PVOL · YHack 2026</span>
-        <button className="landing__back-top" onClick={() => topRef.current?.scrollIntoView({ behavior: "smooth" })} title="Back to top">↑</button>
+        <button className="l-footer__link" onClick={onMethodology}>Methodology</button>
+        <button className="l-footer__top" onClick={() => topRef.current?.scrollIntoView({ behavior: "smooth" })}>↑</button>
       </footer>
 
     </div>

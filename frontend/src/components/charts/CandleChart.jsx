@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { createChart } from "lightweight-charts";
+import { createChart, CandlestickSeries, LineSeries } from "lightweight-charts";
 import "./CandleChart.css";
 
 /**
@@ -78,7 +78,7 @@ export default function CandleChart({
       chart.applyOptions({ localization: { priceFormatter } });
     }
 
-    const candleSeries = chart.addCandlestickSeries({
+    const candleSeries = chart.addSeries(CandlestickSeries, {
       upColor:          "#26a69a",
       downColor:        "#ef5350",
       borderUpColor:    "#26a69a",
@@ -90,7 +90,7 @@ export default function CandleChart({
     candleSeries.setData(candleData);
 
     if (lineData?.length) {
-      const ls = chart.addLineSeries({
+      const ls = chart.addSeries(LineSeries, {
         color:                  lineColor,
         lineWidth:              2,
         lineStyle:              0,
