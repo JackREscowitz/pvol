@@ -19,6 +19,32 @@ export const MOCK_DATA = {
   ],
 };
 
+// ── Candlestick data for GAP chart (50 candles × 10 min) ──
+export const MOCK_CANDLES = (() => {
+  const candles = [];
+  const start = Date.now() - 50 * 10 * 60_000;
+  let price = 5.2;
+  for (let i = 0; i < 50; i++) {
+    const t      = new Date(start + i * 10 * 60_000);
+    const open   = price;
+    const noise  = (Math.random() - .48) * 2.2 + Math.sin(i / 7) * .4;
+    const close  = Math.max(.4, Math.min(13.5, open + noise));
+    const wUp    = Math.random() * 1.2 + .2;
+    const wDown  = Math.random() * 1.2 + .2;
+    const high   = +( Math.max(open, close) + wUp   ).toFixed(2);
+    const low    = +( Math.max(.1, Math.min(open, close) - wDown) ).toFixed(2);
+    candles.push({
+      time:  t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      open:  +open.toFixed(2),
+      close: +close.toFixed(2),
+      high,
+      low,
+    });
+    price = close;
+  }
+  return candles;
+})();
+
 const now = Date.now();
 export const MOCK_HISTORY = Array.from({ length: 24 }, (_, i) => {
   const t    = new Date(now - (23 - i) * 5 * 60_000);
