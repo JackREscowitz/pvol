@@ -16,7 +16,7 @@ const CHARTS = [
   { id: "comparison-chart", title: "PVOL vs DVOL",       subtitle: "Index comparison over time", primary: false },
 ];
 
-export default function Dashboard() {
+export default function Dashboard({ onBack }) {
   const live = useDashboardData();
   const { data, loading, error, lastUpdated, refresh } = USE_MOCK
     ? { data: MOCK_DATA, loading: false, error: null, lastUpdated: new Date(), refresh: () => {} }
@@ -60,6 +60,9 @@ export default function Dashboard() {
       {/* ── Top bar ── */}
       <header className="terminal__topbar">
         <div className="terminal__brand">
+          {onBack && (
+            <button className="terminal__back" onClick={onBack} title="Back to landing">←</button>
+          )}
           <span className="terminal__brand-name">PVOL</span>
           <span className="terminal__brand-sub">Polymarket Implied Volatility</span>
         </div>

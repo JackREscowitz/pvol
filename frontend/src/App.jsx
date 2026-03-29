@@ -1,6 +1,11 @@
+import { useState } from "react";
+import Landing from "./components/Landing.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import "./App.css";
 
 export default function App() {
-  return <Dashboard />;
+  const [view, setView] = useState("landing");
+
+  if (view === "dashboard") return <Dashboard onBack={() => setView("landing")} />;
+  return <Landing onEnter={() => setView("dashboard")} />;
 }

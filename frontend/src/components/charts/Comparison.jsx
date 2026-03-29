@@ -1,7 +1,7 @@
 import {
   LineChart, Line, XAxis, YAxis,
   CartesianGrid, Tooltip, Legend,
-  ResponsiveContainer,
+  ResponsiveContainer, Brush,
 } from "recharts";
 import { useChartHistory } from "../../hooks/useChartHistory.js";
 import "./ComparisonChart.css";
@@ -42,7 +42,7 @@ function CompLegend({ payload }) {
   );
 }
 
-export default function ComparisonChart({ data, loading, history: historyProp }) {
+export default function ComparisonChart({ data, loading, history: historyProp, showBrush = false }) {
   const liveHistory = useChartHistory(historyProp ? null : data);
   const history = historyProp ?? liveHistory;
 
@@ -97,6 +97,9 @@ export default function ComparisonChart({ data, loading, history: historyProp })
             strokeDasharray="6 3"
             activeDot={{ r: 4, fill: "#aa44ff", strokeWidth: 0 }}
           />
+          {showBrush && (
+            <Brush dataKey="time" height={26} stroke="#1a1a2e" fill="#0b0b10" travellerWidth={6} />
+          )}
         </LineChart>
       </ResponsiveContainer>
     </div>
