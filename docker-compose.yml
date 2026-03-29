@@ -1,7 +1,0 @@
-services:
-  dashboard:
-    build:
-      context: frontend
-      dockerfile: Dockerfile
-    ports:
-      - "9867:80"
