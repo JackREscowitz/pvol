@@ -182,14 +182,3 @@
     border-right-color: var(--border);
   }
 }
-
-
-*, *::before, *::after {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  background: #0b0b10;
-}
-
